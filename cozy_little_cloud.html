@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cozy Little Cloud</title>
+<style>
+  :root{
+    --bg:#fff8f0; --card:#ffffff; --ink:#4d4052; --muted:#8f7f8e;
+    --pink:#ff9fb2; --yellow:#ffd978; --blue:#a9d8ff; --green:#b8e3c0;
+    --shadow:0 18px 45px rgba(92,68,84,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;
+    color:var(--ink); background:
+      radial-gradient(circle at 15% 10%,#ffe6ec 0 90px,transparent 91px),
+      radial-gradient(circle at 90% 20%,#e5f4ff 0 120px,transparent 121px),
+      var(--bg); display:grid; place-items:center; padding:24px;
+  }
+  .app{width:min(760px,100%)}
+  header{text-align:center;margin-bottom:18px}
+  .cloud{font-size:54px; animation:float 3s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-7px)}}
+  h1{margin:2px 0 5px;font-size:clamp(28px,6vw,44px)}
+  .subtitle{margin:0;color:var(--muted)}
+  .card{background:rgba(255,255,255,.88);border:2px solid #fff;border-radius:28px;padding:24px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+  .prompt{font-size:22px;font-weight:800;text-align:center;margin:0 0 18px}
+  .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  button{
+    border:0;border-radius:18px;padding:16px 12px;font:inherit;font-weight:800;color:var(--ink);
+    background:#fff;cursor:pointer;box-shadow:0 7px 0 rgba(77,64,82,.08);transition:.16s;
+  }
+  button:hover{transform:translateY(-2px)}
+  button:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(77,64,82,.08)}
+  .choice span{display:block;font-size:30px;margin-bottom:5px}
+  .choice.selected{outline:3px solid var(--pink);background:#fff0f4}
+  .result{margin-top:18px;padding:18px;border-radius:22px;background:#fff8d9;display:none;text-align:center}
+  .result.show{display:block;animation:pop .3s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .result .big{font-size:48px}
+  .result h2{margin:4px 0 6px}
+  .result p{margin:0;color:var(--muted);line-height:1.5}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  .primary{background:var(--pink)}
+  .secondary{background:#edf7ff}
+  .tiny{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}
+  .spark{position:fixed;pointer-events:none;animation:rise 900ms ease-out forwards;font-size:22px}
+  @keyframes rise{to{transform:translate(var(--x),-110px) rotate(25deg);opacity:0}}
+  @media(max-width:560px){.choices{grid-template-columns:1fr}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="cloud">☁️</div>
+    <h1>Cozy Little Cloud</h1>
+    <p class="subtitle">A tiny mood-to-moment generator ✨</p>
+  </header>
+
+  <section class="card">
+    <p class="prompt">How are you feeling right now?</p>
+    <div class="choices" id="choices">
+      <button class="choice" data-mood="sleepy"><span>😴</span>Sleepy</button>
+      <button class="choice" data-mood="meh"><span>😐</span>Meh</button>
+      <button class="choice" data-mood="happy"><span>😊</span>Happy</button>
+      <button class="choice" data-mood="stressed"><span>😵‍💫</span>Stressed</button>
+      <button class="choice" data-mood="creative"><span>🎨</span>Creative</button>
+      <button class="choice" data-mood="adventurous"><span>🌈</span>Adventurous</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="big" id="emoji">🌷</div>
+      <h2 id="title">Tiny suggestion</h2>
+      <p id="text">Pick a mood and I'll give you a little idea.</p>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="surprise">🎲 Surprise me</button>
+      <button class="secondary" id="reset">↻ Reset</button>
+    </div>
+    <div class="tiny">No accounts. No tracking. Just cozy vibes.</div>
+  </section>
+</main>
+
+<script>
+const ideas = {
+  sleepy:[
+    ["🫖","Soft Reset","Make a warm drink, dim the lights, and give yourself 10 screen-free minutes."],
+    ["🧸","Cozy Nest","Grab a blanket and listen to one calming song without doing anything else."],
+    ["🌙","Tiny Nap","Set a 20-minute timer and take a guilt-free power nap."]
+  ],
+  meh:[
+    ["🍓","Micro-Joy","Eat something you love while watching a 5-minute video that makes you smile."],
+    ["🚶","Mood Walk","Walk outside for 10 minutes and notice three interesting things."],
+    ["🧩","Tiny Win","Pick one task that takes under five minutes. Finish it. Celebrate it."]
+  ],
+  happy:[
+    ["💌","Share It","Send someone a message telling them one thing you appreciate about them."],
+    ["🎶","Main Character","Put on your favorite song and dramatically enjoy the next three minutes."],
+    ["📸","Save Today","Take one photo of something ordinary that feels lovely today."]
+  ],
+  stressed:[
+    ["🌿","Breathe","Inhale for 4, exhale for 6, and repeat five times."],
+    ["📝","Brain Dump","Write every task on your mind. Circle just one thing to do next."],
+    ["💧","Reset Button","Drink a glass of water, unclench your jaw, and stretch your shoulders."]
+  ],
+  creative:[
+    ["✏️","Bad Art Club","Draw the silliest creature you can in exactly 60 seconds."],
+    ["🍰","Invent a Snack","Combine two ingredients you like and give the creation a ridiculous name."],
+    ["📖","Six Words","Write a six-word story about your day."]
+  ],
+  adventurous:[
+    ["🗺️","Tiny Detour","Take a route you've never taken before, even if it's only one block."],
+    ["☕","Mystery Café","Try a drink or snack you've never ordered before."],
+    ["🌅","Chase a View","Find the nearest pretty view and spend five quiet minutes there."]
+  ]
+};
+
+const result = document.getElementById("result");
+const emoji = document.getElementById("emoji");
+const title = document.getElementById("title");
+const text = document.getElementById("text");
+let currentMood = null;
+
+function show(mood){
+  currentMood = mood;
+  document.querySelectorAll(".choice").forEach(b => b.classList.toggle("selected", b.dataset.mood===mood));
+  const pick = ideas[mood][Math.floor(Math.random()*ideas[mood].length)];
+  emoji.textContent = pick[0];
+  title.textContent = pick[1];
+  text.textContent = pick[2];
+  result.classList.remove("show");
+  requestAnimationFrame(()=>result.classList.add("show"));
+  sparkle();
+}
+
+function sparkle(){
+  const symbols=["✨","💗","⭐","🌸","☁️"];
+  for(let i=0;i<7;i++){
+    const s=document.createElement("div");
+    s.className="spark";
+    s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+    s.style.left=(35+Math.random()*30)+"%";
+    s.style.top=(45+Math.random()*15)+"%";
+    s.style.setProperty("--x",(Math.random()*160-80)+"px");
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),900);
+  }
+}
+
+document.querySelectorAll(".choice").forEach(btn=>{
+  btn.addEventListener("click",()=>show(btn.dataset.mood));
+});
+
+document.getElementById("surprise").addEventListener("click",()=>{
+  const moods=Object.keys(ideas);
+  show(moods[Math.floor(Math.random()*moods.length)]);
+});
+
+document.getElementById("reset").addEventListener("click",()=>{
+  currentMood=null;
+  document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+  result.classList.remove("show");
+});
+</script>
+</body>
+</html>
